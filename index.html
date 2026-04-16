@@ -1,1 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三峽民生街美食拉霸機</title>
+    <style>
+        :root { --primary: #e63946; --secondary: #1d3557; --accent: #f1faee; }
+        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .machine-container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); text-align: center; width: 90%; max-width: 450px; border: 5px solid var(--secondary); }
+        h1 { color: var(--secondary); font-size: 1.8rem; margin-bottom: 5px; }
+        .location-info { font-size: 0.9rem; color: #666; margin-bottom: 20px; }
+        
+        .slots { display: flex; gap: 10px; margin: 25px 0; background: #222; padding: 15px; border-radius: 12px; height: 100px; overflow: hidden; }
+        .slot { flex: 1; background: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.1rem; color: #333; height: 100%; text-align: center; transition: all 0.1s ease; }
+        
+        .btn-spin { background: var(--primary); color: white; border: none; padding: 15px 40px; font-size: 1.4rem; border-radius: 50px; cursor: pointer; font-weight: bold; width: 100%; box-shadow: 0 4px 0 #b92e3a; transition: 0.1s; }
+        .btn-spin:active { transform: translateY(4px); box-shadow: 0 0 0 #b92e3a; }
+        
+        #final-result { margin-top: 20px; padding: 15px; background: var(--accent); border-radius: 10px; min-height: 60px; color: var(--secondary); font-weight: bold; line-height: 1.6; }
+        .spinning { animation: blur 0.1s infinite; }
+        @keyframes blur { 0% { filter: blur(0px); transform: translateY(-2px); } 50% { filter: blur(2px); transform: translateY(2px); } 100% { filter: blur(0px); transform: translateY(-2px); } }
+    </style>
+</head>
+<body>
 
+<div class="machine-container">
+    <h1>🎰 三峽美食拉霸機</h1>
+    <div class="location-info">📍 中心：民生街1巷 (2km 內 3★+)</div>
+    
+    <div class="slots">
+        <div id="slot-cat" class="slot">類別</div>
+        <div id="slot-res" class="slot">店家</div>
+        <div id="slot-meal" class="slot">套餐</div>
+    </div>
+
+    <button class="btn-spin" onclick="startSpin()">開始拉霸！</button>
+
+    <div id="final-result">準備好要吃什麼了嗎？</div>
+</div>
+
+<script>
+    const data = {
+        "速食連鎖": {
+            "麥當勞-復興店": ["大麥克套餐", "麥脆雞腿分享盒", "勁辣雞腿堡套餐", "雙層牛肉堡餐"],
+            "肯德基-復興店": ["卡啦雞腿堡餐", "5塊雞XL套餐", "青花椒香麻脆雞餐", "原味蛋撻禮盒"],
+            "必勝客-三峽店": ["超級總匯個人比薩", "和風章魚燒比薩", "紙包筆管麵套餐"],
+            "摩斯漢堡-學成店": ["海洋珍珠堡套餐", "摩斯鱈魚堡", "黃金炸蝦堡"]
+        },
+        "中式台式": {
+            "河南砂鍋手工扯麵": ["番茄蛋扯麵(必點)", "清燉牛肉扯麵", "炸醬扯麵"],
+            "海爺四號乾麵": ["四號乾麵+肉燥飯", "紅油皮蛋麵", "餛飩湯麵組合"],
+            "三峽鵝肉大王": ["鵝肉切盤+鵝油飯", "鵝肉湯麵", "綜合黑白切"],
+            "古伯手工米苔目": ["乾米苔目+肝連", "湯米苔目+油豆腐", "肉燥飯套餐"],
+            "八方雲集-民生店": ["招牌鍋貼15顆", "咖哩水餃+酸辣湯", "紹辣乾麵特餐"]
+        },
+        "日韓料理": {
+            "八條壽司": ["盛合握壽司", "日式炸豬排定食", "綜合生魚片"],
+            "定食8-三峽店": ["豪華海鮮丼", "岩鹽牛排定食", "經典炸蝦定食"],
+            "初原麵場": ["焙煎味噌拉麵", "特盛豚骨拉麵", "叉燒丼餐"],
+            "起家雞-三峽北大店": ["頂級洋釀炸雞", "黃金頂級起司炸雞", "人氣青蔥炸雞"]
+        },
+        "西式義式": {
+            "大義義大利麵": ["青醬海鮮麵", "奶油培根燉飯", "蒜辣雞肉義大利麵"],
+            "西堤牛排-三峽復興店": ["經典原塊牛排套餐", "法式香煎鴨胸", "義式披薩牛排"],
+            "魔法義大利": ["焗烤肉醬千層麵", "粉紅醬鮮蝦麵", "夏威夷比薩"]
+        }
+    };
+
+    function startSpin() {
+        const catSlot = document.getElementById('slot-cat');
+        const resSlot = document.getElementById('slot-res');
+        const mealSlot = document.getElementById('slot-meal');
+        const resultDiv = document.getElementById('final-result');
+
+        // 加入旋轉特效
+        [catSlot, resSlot, mealSlot].forEach(s => s.classList.add('spinning'));
+        resultDiv.innerText = "旋轉中...";
+
+        setTimeout(() => {
+            const categories = Object.keys(data);
+            const selectedCat = categories[Math.floor(Math.random() * categories.length)];
+            
+            const restaurants = Object.keys(data[selectedCat]);
+            const selectedRes = restaurants[Math.floor(Math.random() * restaurants.length)];
+            
+            const meals = data[selectedCat][selectedRes];
+            const selectedMeal = meals[Math.floor(Math.random() * meals.length)];
+
+            // 移除旋轉特效並更新內容
+            [catSlot, resSlot, mealSlot].forEach(s => s.classList.remove('spinning'));
+            
+            catSlot.innerText = selectedCat;
+            resSlot.innerText = selectedRes;
+            mealSlot.innerText = "餐點";
+
+            setTimeout(() => {
+                mealSlot.innerText = selectedMeal;
+                resultDiv.innerHTML = `🎉 決定好了！今天就去 <span style="color:#e63946">${selectedRes}</span><br>吃 <span style="color:#e63946">${selectedMeal}</span>！`;
+            }, 300);
+            
+        }, 1000);
+    }
+</script>
+
+</body>
+</html>
