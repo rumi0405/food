@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>阿母家常熱炒拉霸機</title>
+    <style>
+        :root { --primary: #fb8500; --secondary: #023047; --accent: #ffb703; }
+        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background: #fdf0d5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .machine-container { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); text-align: center; width: 95%; max-width: 550px; border: 5px solid var(--primary); }
+        h1 { color: var(--secondary); font-size: 1.8rem; margin-bottom: 5px; }
+        .subtitle { color: #d62828; font-weight: bold; margin-bottom: 15px; }
+        
+        .slots { display: flex; gap: 8px; margin: 20px 0; background: #333; padding: 12px; border-radius: 12px; height: 110px; }
+        .slot { flex: 1; background: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem; color: #333; height: 100%; text-align: center; padding: 5px; line-height: 1.3; overflow: hidden; }
+        
+        .btn-spin { background: var(--primary); color: white; border: none; padding: 18px; font-size: 1.5rem; border-radius: 50px; cursor: pointer; font-weight: bold; width: 100%; box-shadow: 0 4px 0 #bc6c25; transition: 0.1s; }
+        .btn-spin:active { transform: translateY(4px); box-shadow: 0 0 0 #bc6c25; }
+        
+        #final-result { margin-top: 20px; padding: 20px; background: #fff; border: 2px dashed var(--primary); border-radius: 12px; min-height: 100px; }
+        .dish-name { color: #d62828; font-size: 1.6rem; font-weight: bold; display: block; margin-bottom: 5px; }
+        .spinning { animation: blur 0.1s infinite; }
+        @keyframes blur { 0% { filter: blur(0px); } 50% { filter: blur(1.5px); } 100% { filter: blur(0px); } }
+    </style>
+</head>
+<body>
+
+<div class="machine-container">
+    <h1>👨‍🍳 阿母熱炒店開張</h1>
+    <div class="subtitle">今日晚餐大對決</div>
+    
+    <div class="slots">
+        <div id="slot-cat" class="slot">食材類別</div>
+        <div id="slot-dish" class="slot">精選菜色</div>
+        <div id="slot-note" class="slot">阿母私房要求</div>
+    </div>
+
+    <button class="btn-spin" onclick="startSpin()">抽一道菜！</button>
+
+    <div id="final-result">今天阿母要露哪一手呢？</div>
+</div>
+
+<script>
+    const menuData = {
+        "畜肉類 (豬/牛)": {
+            dishes: ["蔥爆牛肉", "蒜泥白肉", "客家小炒", "糖醋排骨", "回鍋肉", "薑絲炒大腸", "青椒肉絲", "打拋豬", "台式炸紅燒肉", "醬爆肉絲", "京醬肉絲", "馬鈴薯燉肉", "梅干扣肉", "蒼蠅頭", "螞蟻上樹", "蒜苗炒臘肉", "紅燒獅子頭", "咕咾肉", "沙茶牛肉", "黑胡椒豬柳"],
+            notes: ["記得多加點蔥", "稍微勾點薄芡", "辣椒加爆", "肉要煎乾一點", "這道要配大蒜", "少油少鹽"]
+        },
+        "禽肉類 (雞/鴨)": {
+            dishes: ["三杯雞", "宮保雞丁", "白斬雞", "醉雞盤", "左宗棠雞", "栗子燒雞", "鹽酥雞(家常版)", "辣子雞丁", "九層塔炒雞肉", "蒜頭雞", "香菇燉雞", "蜜汁雞腿", "台式烤雞翅"],
+            notes: ["九層塔多放一點", "雞皮要煎脆", "汁收乾一點", "加點香菇一起煮", "這道要甜一點"]
+        },
+        "海鮮料理": {
+            dishes: ["塔香蛤蜊", "鳳梨蝦球", "清蒸鮮魚", "乾煎白鯧", "蒜蒸蝦", "薑絲炒小卷", "糖醋魚片", "蚵仔酥", "豆酥鱈魚", "避風塘炒蝦", "五味花枝", "滑蛋蝦仁", "蟹黃豆腐煲", "豆瓣魚", "酥炸龍珠", "芹菜炒花枝"],
+            notes: ["海鮮要先燙過", "多放薑絲去腥", "加點米酒提味", "蝦子要剝殼", "這道要趁熱吃"]
+        },
+        "蔬菜/季節": {
+            dishes: ["培根高麗菜", "鹹蛋苦瓜", "蒜炒空心菜", "樹子炒水蓮", "開陽白菜", "乾煸四季豆", "魚香茄子", "櫻花蝦油菜", "絲瓜炒蛤蜊", "金沙南瓜", "清炒大白菜", "蠔油芥蘭", "肉絲炒蒜苗", "青江菜炒香菇", "涼拌小黃瓜"],
+            notes: ["蔬菜要脆一點", "加點蝦米提味", "這道不要太鹹", "多加點蒜末", "大火快炒"]
+        },
+        "蛋/豆腐類": {
+            dishes: ["菜脯蛋", "鐵板豆腐", "麻婆豆腐", "老皮嫩肉", "九層塔蛋", "紅燒豆腐", "蔥花蛋", "三杯杏鮑菇", "金沙豆腐", "番茄炒蛋", "皮蛋豆腐(拌炒)", "三色蛋", "皮蛋地瓜葉", "蝦仁烘蛋", "皮蛋瘦肉煲"],
+            notes: ["蛋要煎得厚厚的", "豆腐要先煎過", "加點肉末一起炒", "這道要多汁", "加點辣更好吃"]
+        },
+        "湯品系列": {
+            dishes: ["剝皮辣椒雞湯", "蛤蜊冬瓜湯", "味噌鮮魚湯", "蘿蔔排骨湯", "酸辣湯", "玉米濃湯", "鳳梨苦瓜雞湯", "貢丸蛋花湯", "麻油雞湯", "薑絲鮮魚湯", "番茄排骨湯", "莧菜小魚湯"],
+            notes: ["湯頭要濃一點", "加點芹菜珠", "多撒點胡椒粉", "這道要熱滾滾", "加點滴雞精"]
+        }
+    };
+
+    function startSpin() {
+        const catSlot = document.getElementById('slot-cat');
+        const dishSlot = document.getElementById('slot-dish');
+        const noteSlot = document.getElementById('slot-note');
+        const resultDiv = document.getElementById('final-result');
+
+        [catSlot, dishSlot, noteSlot].forEach(s => s.classList.add('spinning'));
+        resultDiv.innerHTML = "🔥 阿母正在熱鍋中...";
+
+        setTimeout(() => {
+            const categories = Object.keys(menuData);
+            const selectedCat = categories[Math.floor(Math.random() * categories.length)];
+            
+            const dishes = menuData[selectedCat].dishes;
+            const selectedDish = dishes[Math.floor(Math.random() * dishes.length)];
+            
+            const notes = menuData[selectedCat].notes;
+            const selectedNote = notes[Math.floor(Math.random() * notes.length)];
+
+            [catSlot, dishSlot, noteSlot].forEach(s => s.classList.remove('spinning'));
+            
+            catSlot.innerText = selectedCat;
+            dishSlot.innerText = selectedDish;
+            noteSlot.innerText = selectedNote;
+
+            resultDiv.innerHTML = `
+                <p style="font-size:1.1rem; color:#666; margin-bottom:5px;">今日特選料理：</p>
+                <span class="dish-name">✨ ${selectedDish} ✨</span>
+                <p style="color:var(--primary); font-weight:bold;">💡 阿母小提醒：${selectedNote}</p>
+                <p style="font-size:0.8rem; color:#888;">(這道配白飯可以吃三碗！)</p>
+            `;
+            
+        }, 1000);
+    }
+</script>
+
+</body>
+</html>
